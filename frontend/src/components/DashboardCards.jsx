@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { getVisitorStats, getVisitorTrend, getGitHubContributions } from '../services/api';
+import { registerVisit, getGitHubContributions } from '../services/api';
 import { Activity, Award, TrendingUp, Users, ExternalLink, Calendar, CheckCircle2 } from 'lucide-react';
 
 const LEVEL_COLORS = {
@@ -37,16 +37,12 @@ export default function DashboardCards() {
       }
 
       try {
-        const stats = await getVisitorStats();
+        const stats = await registerVisit();
         if (isMounted && stats) {
           setVisitorStats({ total: stats.total || 0, today: stats.today || 0 });
         }
-        const trendData = await getVisitorTrend();
-        if (isMounted && trendData) {
-          setTrend(trendData);
-        }
-      } catch (e) {
-        console.warn('Visitor trend notice:', e);
+      } catch {
+        // Silently ignore if Supabase not configured
       } finally {
         if (isMounted) setLoadingVisitors(false);
       }

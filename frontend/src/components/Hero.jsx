@@ -1,24 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { ArrowRight, FileText, Send, Sparkles, FolderGit2, GraduationCap, Users } from 'lucide-react';
-import { recordVisit, getVisitorStats } from '../services/api';
+import { registerVisit } from '../services/api';
 
 export default function Hero() {
-  const [visitorStats, setVisitorStats] = useState({ total: 0, today: 0 });
-  const [loadingVisitors, setLoadingVisitors] = useState(true);
+  const [visitorStats, setVisitorStats] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
     async function loadStats() {
       try {
-        await recordVisit();
-        const data = await getVisitorStats();
-        if (isMounted && data) {
+        const data = await registerVisit();
+        if (isMounted && data && typeof data.total !== 'undefined') {
           setVisitorStats({ total: data.total || 0, today: data.today || 0 });
         }
-      } catch (err) {
-        console.warn('Visitor stats error:', err);
-      } finally {
-        if (isMounted) setLoadingVisitors(false);
+      } catch {
+        // Sembunyikan counter jika Supabase null atau belum disiapkan tanpa error mengganggu
       }
     }
     loadStats();
@@ -152,8 +148,8 @@ export default function Hero() {
 
         </div>
 
-        {/* Floating Cards Below Hero: Proyek (jumlah), IPK 3.68, dan Visitor Counter */}
-        <div className="mt-12 lg:mt-16 grid grid-cols-1 md:grid-cols-3 gap-5">
+        {/* Floating Cards Below Hero: Proyek, IPK 3.68, dan Visitor Counter (jika aktif) */}
+        <div className={`mt-12 lg:mt-16 grid grid-cols-1 ${visitorStats ? 'md:grid-cols-3' : 'md:grid-cols-2 max-w-4xl mx-auto'} gap-5`}>
           
           {/* Card 1: Proyek (Jumlah) */}
           <div className="bg-[#09318D]/75 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl shadow-[#09318D]/25 transition-all duration-300 hover:-translate-y-1 hover:border-[#FD91CC]/60 flex items-center gap-4">
@@ -184,33 +180,35 @@ export default function Hero() {
             </div>
           </div>
 
-          {/* Card 3: Visitor Counter (Total & Hari ini) */}
-          <div className="bg-[#09318D]/75 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl shadow-[#09318D]/25 transition-all duration-300 hover:-translate-y-1 hover:border-[#FD91CC]/60 flex items-center gap-4">
-            <div className="p-3.5 rounded-2xl bg-white/10 text-[#FD91CC] border border-white/10 shrink-0">
-              <Users className="w-6 h-6" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-white/70 font-semibold">Pengunjung:</span>
-                <span className="flex h-2 w-2 rounded-full bg-[#FD91CC] animate-pulse" />
+          {/* Card 3: Visitor Counter (Total & Hari ini) - Tampil jika Supabase aktif */}
+          {visitorStats && (
+            <div className="bg-[#09318D]/75 backdrop-blur-xl border border-white/20 rounded-3xl p-6 shadow-xl shadow-[#09318D]/25 transition-all duration-300 hover:-translate-y-1 hover:border-[#FD91CC]/60 flex items-center gap-4">
+              <div className="p-3.5 rounded-2xl bg-white/10 text-[#FD91CC] border border-white/10 shrink-0">
+                <Users className="w-6 h-6" />
               </div>
-              <div className="flex items-baseline gap-3 mt-0.5">
-                <div>
-                  <span className="font-display text-xl font-black text-[#FD91CC]">
-                    {loadingVisitors ? '...' : visitorStats.today}
-                  </span>
-                  <span className="text-[10px] text-white/70 ml-1">Hari ini</span>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-white/70 font-semibold">Pengunjung:</span>
+                  <span className="flex h-2 w-2 rounded-full bg-[#FD91CC] animate-pulse" />
                 </div>
-                <div className="text-white/40">|</div>
-                <div>
-                  <span className="font-display text-xl font-black text-white">
-                    {loadingVisitors ? '...' : visitorStats.total}
-                  </span>
-                  <span className="text-[10px] text-white/70 ml-1">Total</span>
+                <div className="flex items-baseline gap-3 mt-0.5">
+                  <div>
+                    <span className="font-display text-xl font-black text-[#FD91CC]">
+                      {visitorStats.today}
+                    </span>
+                    <span className="text-[10px] text-white/70 ml-1">Hari ini</span>
+                  </div>
+                  <div className="text-white/40">|</div>
+                  <div>
+                    <span className="font-display text-xl font-black text-white">
+                      {visitorStats.total}
+                    </span>
+                    <span className="text-[10px] text-white/70 ml-1">Total</span>
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
+          )}
 
         </div>
 

@@ -32,18 +32,58 @@ export default function GithubHeatmap() {
     { id: '2024', label: '2024' },
   ];
 
+  const prepareTabs = (data) => {
+    if (data.tabs) return data.tabs;
+    const allWeeks = data.weeks || [];
+
+    const tabs = {
+      last_year: {
+        totalContributions: data.totalContributions || 0,
+        weeks: allWeeks,
+        title: 'dalam 1 tahun terakhir',
+      },
+    };
+
+    ['2026', '2025', '2024'].forEach((yearStr) => {
+      let yearTotal = 0;
+      const yearWeeks = allWeeks
+        .map((week) => {
+          const days = (week.contributionDays || []).map((day) => {
+            const isInYear = day.date ? day.date.startsWith(yearStr) : false;
+            if (isInYear) yearTotal += (day.contributionCount || 0);
+            return {
+              ...day,
+              isInYear,
+            };
+          });
+          return { contributionDays: days };
+        })
+        .filter((w) => w.contributionDays.some((d) => d.isInYear));
+
+      tabs[yearStr] = {
+        totalContributions: yearTotal,
+        weeks: yearWeeks.length > 0 ? yearWeeks : allWeeks,
+        title: `pada tahun ${yearStr}`,
+      };
+    });
+
+    return tabs;
+  };
+
   const fetchContributions = async () => {
     setLoading(true);
     setError(null);
     try {
       const data = await getGitHubContributions();
-      setRawData(data);
+      const tabs = prepareTabs(data);
+      const enrichedData = { ...data, tabs };
+      setRawData(enrichedData);
 
-      const defaultTabId = data.defaultTab || 'last_year';
+      const defaultTabId = 'last_year';
       setActiveTab(defaultTabId);
 
-      const initialCalendar = data.tabs?.[defaultTabId] || {
-        totalContributions: data.totalContributions || 253,
+      const initialCalendar = tabs[defaultTabId] || {
+        totalContributions: data.totalContributions || 0,
         weeks: data.weeks || [],
         title: 'dalam 1 tahun terakhir',
       };

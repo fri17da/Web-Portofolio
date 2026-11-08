@@ -1,85 +1,51 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api';
+import { supabase } from './supabase';
 
 /**
- * Catat kunjungan pengunjung saat ini ke backend
+ * Registrasi kunjungan pengunjung menggunakan Supabase RPC
+ * Mengembalikan objek { total, today }
  */
-export async function recordVisit() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/visit`, {
-      method: 'POST',
-      headers: {
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
-    });
-    if (!res.ok) {
-      console.warn('Gagal mencatat kunjungan:', res.statusText);
-    }
-    return await res.json().catch(() => null);
-  } catch (error) {
-    console.warn('Error saat mencatat kunjungan:', error);
+export async function registerVisit() {
+  if (!supabase) {
     return null;
   }
-}
 
-/**
- * Ambil statistik pengunjung (total & hari ini)
- */
-export async function getVisitorStats() {
+  let visitorId = null;
   try {
-    const res = await fetch(`${API_BASE_URL}/visitors`, {
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP error ${res.status}`);
+    visitorId = localStorage.getItem('portfolio_visitor_id');
+    if (!visitorId) {
+      visitorId = typeof crypto?.randomUUID === 'function'
+        ? crypto.randomUUID()
+        : 'v-' + Math.random().toString(36).substring(2, 15);
+      localStorage.setItem('portfolio_visitor_id', visitorId);
     }
-    return await res.json();
-  } catch (error) {
-    console.error('Error saat mengambil statistik pengunjung:', error);
+  } catch {
+    visitorId = 'anon-' + Math.random().toString(36).substring(2, 15);
+  }
+
+  const { data, error } = await supabase.rpc('register_visit', { p_visitor_id: visitorId });
+  if (error) {
     throw error;
   }
+  return data;
 }
 
 /**
- * Ambil tren pengunjung 7 hari terakhir untuk mini line chart
- */
-export async function getVisitorTrend() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/visitors/trend`, {
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    if (!res.ok) {
-      throw new Error(`HTTP error ${res.status}`);
-    }
-    const json = await res.json();
-    return json.trend || [];
-  } catch (error) {
-    console.warn('Gagal memuat tren pengunjung:', error);
-    return [];
-  }
-}
-
-/**
- * Ambil kalender kontribusi GitHub dari backend proxy
+ * Ambil data kontribusi GitHub dari Vercel Serverless Function (/api/github)
+ * Mengembalikan objek contributionCalendar:
+ * { totalContributions, weeks: [{ contributionDays: [{ date, contributionCount, contributionLevel }] }] }
  */
 export async function getGitHubContributions() {
-  try {
-    const res = await fetch(`${API_BASE_URL}/github/contributions`, {
-      headers: {
-        'Accept': 'application/json',
-      },
-    });
-    const json = await res.json();
-    if (!res.ok || !json.success) {
-      throw new Error(json.message || `Gagal memuat kontribusi (${res.status})`);
-    }
-    return json.data;
-  } catch (error) {
-    console.error('Error saat mengambil kontribusi GitHub:', error);
-    throw error;
+  const res = await fetch('/api/github', {
+    headers: {
+      'Accept': 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const json = await res.json().catch(() => ({}));
+    throw new Error(json.message || `Gagal mengambil data GitHub (${res.status})`);
   }
+
+  const calendarData = await res.json();
+  return calendarData;
 }
