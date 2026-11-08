@@ -1,0 +1,133 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    --deep-blue: #09318D;
+    --pure-white: #FFFFFF;
+    --bubblegum-pink: #FD91CC;
+  }
+
+  body {
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #FFFFFF;
+    color: #09318D;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    letter-spacing: -0.025em;
+  }
+}
+
+/* Accessible focus ring */
+:focus-visible {
+  outline: 2px solid #FD91CC;
+  outline-offset: 2px;
+}
+
+/* Reduced motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dot matrix pattern generator */
+.dot-pattern-overlay {
+  background-image: radial-gradient(rgba(255, 255, 255, 0.22) 1.25px, transparent 1.25px);
+  background-size: 24px 24px;
+}
+
+/* Reusable Institution Logo Glow for Deep Blue background (#09318D) */
+.logo-glow {
+  filter: drop-shadow(0 0 1.5px rgba(255, 255, 255, 0.95)) drop-shadow(0 0 8px rgba(255, 255, 255, 0.35));
+  transition: filter 0.3s ease, transform 0.3s ease;
+}
+
+.logo-glow:hover,
+.group:hover .logo-glow {
+  filter: drop-shadow(0 0 2px rgba(255, 255, 255, 1)) drop-shadow(0 0 12px rgba(255, 255, 255, 0.55));
+  transform: scale(1.05);
+}
+
+/* Subtle float animations */
+@keyframes fadeInLogo {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-logo {
+  animation: fadeInLogo 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(-8px) rotate(1.5deg);
+  }
+}
+
+@keyframes floatReverse {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  50% {
+    transform: translateY(8px) rotate(-1.5deg);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    opacity: 0.35;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.65;
+    transform: scale(1.05);
+  }
+}
+
+.animate-float-gentle {
+  animation: floatGentle 5s ease-in-out infinite;
+}
+
+.animate-float-reverse {
+  animation: floatReverse 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulseGlow 4s ease-in-out infinite;
+}
+
+/* Custom scrollbar for horizontal heatmap */
+.custom-scrollbar::-webkit-scrollbar {
+  height: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(9, 49, 141, 0.06);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(253, 145, 204, 0.6);
+  border-radius: 9999px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #FD91CC;
+}

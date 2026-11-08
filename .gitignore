@@ -1,0 +1,14 @@
+
+.env
+.env.*
+!.env.example
+
+*.mp4
+backend/AGENTS.md
+backend/CLAUDE.md
+/build_253_dataset.js
+/check_transparency.php
+/extract_accurate.js
+/inspect_html.js
+/parse_gh_details.js
+/parse_github.js
